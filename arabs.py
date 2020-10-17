@@ -19,6 +19,7 @@ del covidConfirmed["Province/State"]
 del covidDead["Province/State"]
 del covidRecovered["Province/State"]
 
+#Getting rid of all the non-arab countries
 for i in range(len(covidConfirmed)): 
   if(not(covidConfirmed.loc[i, "Country/Region"]) in ("Algeria" , "Bahrain" , "Comoros" , "Djibouti" , "Egypt" , "Iraq" , "Jordan" , "Kuwait" , "Lebanon" , "Libya" , "Mauritania" , "Morocco" , "Oman" , "Qatar" , "Saudi Arabia" , "Somalia" , "Sudan" , "Syria" , "Tunisia" , "United Arab Emirates" , "Yemen")):
     covidConfirmed = covidConfirmed.drop(index=i)
@@ -37,14 +38,13 @@ covidConfirmed.fillna(0, inplace=True)
 covidDead.fillna(0, inplace = True)
 covidRecovered.fillna(0, inplace = True)
 
-
+###Creating a dataframe that has the total number for each country
 country = []
-lat = []
-long = []
 confirmed = []
 dead = []
 recovered = []
 active = []
+mortality = []
 
 for i in range(len(covidConfirmed)) : 
   country.append(covidConfirmed.loc[i,"Country/Region"])
@@ -56,29 +56,31 @@ for i in range(len(covidRecovered)) :
 
 for i in range(len(confirmed)) : 
   active.append(confirmed[i] - dead[i] - recovered[i])
+  mortality.append(round(dead[i]/confirmed[i]*100,2))
+
 
 arabDf = pd.DataFrame({
       'Country' : country,
       'Confirmed' : confirmed,
       'Dead' : dead,
       'Recovered' : recovered,
-      'Active' : active
+      'Active' : active,
+      'Mortality Rate' : mortality
     })    
 
-
+###Converting the data to the long version
 arabLongDf = arabDf.melt(id_vars=['Country'], 
                         value_vars =['Active', 'Dead', 'Recovered'],
                         var_name="Status", 
                         value_name ="Count")
-
+###Plotting the treemap
 treemapFigure = px.treemap(arabLongDf, path=["Country", "Status"], 
                                   values="Count", 
-                                  # color = 'Status',
-                                  # color_discrete_map={'(?)':'random', 'Active':'#3498db', 'Dead':'#e74c3c', 'Recovered':'#2ecc71'},
-                                  title="COVID-19 In the Arab countries", 
+                                  title="COVID-19 in the Arab World", 
                                   template='plotly_dark')
 treemapFigure.data[0].textinfo = 'label+text+value'
 
+#Changing the font and putting the title in the centre
 treemapFigure.update_layout(
     font_family="Courier New",
     title_font_family="Times New Roman",
@@ -97,31 +99,17 @@ treemapFigure.update_layout(
 plot(treemapFigure, filename='treemap.html')
 
 
+###Plotting a bar graph to show the Mortality rate in the arab world
+barFigure = px.bar(arabDf.sort_values(by='Mortality Rate', ascending=True),
+             x="Mortality Rate", y="Country",
+             title='Mortality Rate of the Arab World', text='Mortality Rate',
+             template='plotly_dark', orientation='h'
+             )
 
-###Adding up all the confirmed, dead and recovered cases
+barFigure.update_traces(marker_color='#e74c3c', textposition='outside')
 
-totalArabDf = pd.DataFrame({
-  'Confirmed' : [arabDf.iloc[:, 1].sum()],
-  'Dead' : [arabDf.iloc[:, 2].sum()],
-  'Recovered' : [arabDf.iloc[:, 3].sum()],
-  'Active' : [arabDf.iloc[:, 4].sum()] 
-})
-
-totalArabLongDf = totalArabDf.melt(value_vars=['Active', 'Dead', 'Recovered'],
-                              var_name="Status",
-                              value_name="Count")
-
-pieFigure = px.pie(totalArabLongDf, values='Count', 
-                                    names='Status',
-                                    title='COVID-19 In the Arab countries',
-                                    template='plotly_dark')
-
-colors = ['#3498db','#e74c3c','#2ecc71']
-
-pieFigure.update_traces(hoverinfo='value', textinfo='percent+label', textfont_size=20,
-                  marker=dict(colors=colors, line=dict(color='#000000', width=2)))
-                  
-pieFigure.update_layout(
+#Changing the font and putting the title in the centre
+barFigure.update_layout(
     font_family="Courier New",
     title_font_family="Times New Roman",
     font=dict(
@@ -136,18 +124,75 @@ pieFigure.update_layout(
     }
 )
 
+plot(barFigure, filename='barChart.html')
 
-plot(pieFigure, filename='pie_chart.html')
+###Adding up all the numbers of all the Arab countries combined
+totalArabDf = pd.DataFrame({
+  'Confirmed' : [arabDf.iloc[:, 1].sum()],
+  'Dead' : [arabDf.iloc[:, 2].sum()],
+  'Recovered' : [arabDf.iloc[:, 3].sum()],
+  'Active' : [arabDf.iloc[:, 4].sum()] 
+})
+###Converting to the long version
+totalArabLongDf = totalArabDf.melt(value_vars=['Active', 'Dead', 'Recovered'],
+                              var_name="Status",
+                              value_name="Count")
+###Plotting a pie chart of the totals
+pieFigure = px.pie(totalArabLongDf, values='Count', 
+                                    names='Status',
+                                    title='COVID-19 Cases In the Arab World',
+                                    template='plotly_dark')
+
+colors = ['#3498db','#e74c3c','#2ecc71']
+
+pieFigure.update_traces(hoverinfo='value', textinfo='percent+label', textfont_size=20,
+                  marker=dict(colors=colors, line=dict(color='#000000', width=2)))
+
+#Changing the font and putting the title in the centre                  
+pieFigure.update_layout(
+    font_family="Courier New",
+    title_font_family="Times New Roman",
+    font=dict(
+      family = 'Times New Roman, Courier New',
+      size = 15
+    ),
+    title={
+      'y':0.95,
+      'x':0.5,
+      'xanchor': 'center',
+      'yanchor': 'top',
+    }
+)
+plot(pieFigure, filename='pieChart.html')
 
 
+###Converting the confirmed cases datafram to a long version
+confirmedLongDf = covidConfirmed.melt(id_vars=covidConfirmed.iloc[:,:3], 
+                        var_name='date', 
+                        value_vars =covidConfirmed.iloc[:,3:],
+                        value_name ='Confirmed cases')
 
-# arabConfirmedLongDf = arabDf.melt(id_vars=['Country'], 
-#                         value_vars =['Lat', 'Long', 'Confirmed'],
-#                         var_name="Status", 
-#                         value_name ="Count")
+###Plotting a scatter map
+scatterFigure = px.scatter_geo(confirmedLongDf,
+                     lat="Lat", lon="Long", color="Country/Region",
+                     hover_name="Country/Region", size="Confirmed cases",
+                     size_max=50, animation_frame="date",
+                     template='plotly_dark', projection="natural earth",
+                     title="COVID-19 Arab World Confirmed Cases Over Time")
+#Changing the font and putting the title in the centre
+scatterFigure.update_layout(
+    font_family="Courier New",
+    title_font_family="Times New Roman",
+    font=dict(
+      family = 'Times New Roman, Courier New',
+      size = 15
+    ),
+    title={
+      'y':0.95,
+      'x':0.5,
+      'xanchor': 'center',
+      'yanchor': 'top',
+    }
+)
 
-# scatterFigure=px.scatter_geo(arabConfirmedLongDf, 
-#                              lat='Lat', lon='Long', color='Country',
-#                              hover_name="Country", hover_data='Confirmed',
-#                              size=
-#                              )
+plot(scatterFigure, filename='scatterMap.html')

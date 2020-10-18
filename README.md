@@ -25,13 +25,15 @@ You should expect 4 visuals:
 3. A **_Bar Graph_** that shows the mortality rate per 100 cases in each country. 
 4. A **_Scatter Map_** that shows confirmed cases in the arab world over a time period from february to date.
 
-## Treemap
+Check the examples below to know what to expect
+
+### Treemap
 ![alt-text](images/treemap.gif)
-## Pie Chart
+### Pie Chart
 ![alt-text](images/piechart.png)
-## Bar Graph
+### Bar Graph
 ![alt-text](images/bargraph.png)
-## Scatter Map
-![Scatter map gif](images/scattermap.gif)
+### Scatter Map
+![Scatter map gif](images/scatter.gif)
 ## License
 [MIT](https://choosealicense.com/licenses/mit/)

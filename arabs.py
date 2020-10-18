@@ -102,7 +102,7 @@ plot(treemapFigure, filename='treemap.html')
 ###Plotting a bar graph to show the Mortality rate in the arab world
 barFigure = px.bar(arabDf.sort_values(by='Mortality Rate', ascending=True),
              x="Mortality Rate", y="Country",
-             title='Mortality Rate of the Arab World', text='Mortality Rate',
+             title='Mortality Rate of the Arab World per 100', text='Mortality Rate',
              template='plotly_dark', orientation='h'
              )
 

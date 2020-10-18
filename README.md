@@ -26,12 +26,12 @@ You should expect 4 visuals:
 4. A **_Scatter Map_** that shows confirmed cases in the arab world over a time period from february to date.
 
 ## Treemap
-
+![alt-text](images/treemap.gif)
 ## Pie Chart
-
+![alt-text](images/piechart.png)
 ## Bar Graph
-
+![alt-text](images/bargraph.png)
 ## Scatter Map
-
+![Scatter map gif](images/scattermap.gif)
 ## License
 [MIT](https://choosealicense.com/licenses/mit/)
